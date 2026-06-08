@@ -37,8 +37,8 @@ export default function Register() {
     }
 
     try {
-      // API കോൾ
-      await api.post("/auth/register", {
+      // API കോൾ - 404 ഒഴിവാക്കാൻ /api ചേർത്തു
+      await api.post("/api/auth/register", {
         name: trimmedName,
         email: trimmedEmail,
         password: trimmedPassword,
@@ -119,4 +119,3 @@ export default function Register() {
       </div>
     </div>
   );
-}
