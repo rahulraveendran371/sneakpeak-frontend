@@ -1,16 +1,21 @@
-# React + Vite
+# 👟 SneakPeak - E-Commerce Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SneakPeak is a modern, responsive, and high-performance e-commerce web application designed for sneaker enthusiasts. Built using the MERN stack, it provides a seamless shopping experience with features like product filtering, cart management, and secure authentication.
 
-Currently, two official plugins are available:
+## 🚀 Key Features
+- **Responsive Design:** Optimized for all screen sizes using Tailwind CSS.
+- **Product Management:** Dynamic filtering by price, sorting, and gender-based categories.
+- **Shopping Experience:** Robust Cart and Wishlist management using React Context API.
+- **Secure Authentication:** Protected routes with JWT (JSON Web Tokens) and Axios Interceptors for seamless API communication.
+- **User Experience:** Real-time feedback with toast notifications.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠️ Tech Stack
+- **Frontend:** React.js, Vite, Tailwind CSS, React Router DOM, Axios.
+- **Backend:** Node.js, Express.js, MongoDB, Mongoose, JWT.
+- **Tools:** Git, GitHub, Vercel (Deployment), Render (Deployment).
 
-## React Compiler
+## 💻 Installation & Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/rahulraveendran371-dotcom/sneakpeak-frontend.git](https://github.com/rahulraveendran371-dotcom/sneakpeak-frontend.git)
