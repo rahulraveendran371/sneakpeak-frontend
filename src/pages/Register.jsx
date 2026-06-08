@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
-import { toast } from "react-toastify";
 
 export default function Register() {
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,57 +10,52 @@ export default function Register() {
   const navigate = useNavigate();
 
   const registerUser = async () => {
-
     const trimmedName = name.trim();
     const trimmedEmail = email.trim();
     const trimmedPassword = password.trim();
 
+    // വാലിഡേഷൻ
     if (!trimmedName || !trimmedEmail || !trimmedPassword) {
-      toast.error("All fields are required");
+      alert("All fields are required");
       return;
     }
 
     if (!trimmedEmail.includes("@")) {
-      toast.error("Please enter a valid email");
+      alert("Please enter a valid email");
       return;
     }
 
     if (trimmedPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+      alert("Password must be at least 6 characters");
       return;
     }
 
     const nameRegex = /^[A-Za-z ]+$/;
-
     if (!nameRegex.test(trimmedName)) {
-      toast.error("Name should contain only letters");
+      alert("Name should contain only letters");
       return;
     }
 
     try {
-
+      // API കോൾ
       await api.post("/auth/register", {
         name: trimmedName,
         email: trimmedEmail,
-        password: trimmedPassword
+        password: trimmedPassword,
       });
 
-      toast.success("Registration successful 🎉");
-
-      setTimeout(() => {
-        navigate("/login");
-      }, 1200);
-
+      alert("Registration successful! 🎉");
+      navigate("/login");
     } catch (error) {
-
-      console.error(error);
-
-      toast.error(
-        error.response?.data?.message || "Registration failed"
-      );
-
+      // എറർ മെസ്സേജ് അലർട്ടായി കാണിക്കുന്നു
+      const errorMsg =
+        error.response?.data?.message || 
+        error.message || 
+        "Registration failed. Please check your connection.";
+        
+      alert("Error: " + errorMsg);
+      console.error("Full error details:", error);
     }
-
   };
 
   return (
@@ -73,11 +66,9 @@ export default function Register() {
           "url(https://images.unsplash.com/photo-1542291026-7eec264c27ff)",
       }}
     >
-
       <div className="absolute inset-0 bg-black/60"></div>
 
       <div className="relative bg-white w-96 p-8 rounded-xl shadow-lg z-10">
-
         <Link
           to="/"
           className="text-sm text-gray-600 hover:underline block mb-3"
@@ -85,9 +76,7 @@ export default function Register() {
           ← Back to Home
         </Link>
 
-        <h2 className="text-2xl font-bold text-center mb-6">
-          Create Account
-        </h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Create Account</h2>
 
         <input
           type="text"
@@ -123,14 +112,10 @@ export default function Register() {
 
         <p className="text-sm text-center mt-4">
           Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-blue-600 hover:underline"
-          >
+          <Link to="/login" className="text-blue-600 hover:underline">
             Login
           </Link>
         </p>
-
       </div>
     </div>
   );
