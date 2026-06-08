@@ -1,8 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 
-const STATUS_OPTIONS = ["Placed", "Shipped", "Delivered", "Cancelled"];
+const STATUS_OPTIONS = [
+  "Placed",
+  "Shipped",
+  "Delivered",
+  "Cancelled",
+];
+
 const ITEMS_PER_PAGE = 6;
 
 const STATUS_COLORS = {
@@ -13,7 +19,6 @@ const STATUS_COLORS = {
 };
 
 export default function AdminOrders() {
-
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
@@ -25,88 +30,141 @@ export default function AdminOrders() {
   }, []);
 
   const fetchData = async () => {
-
     try {
+      setLoading(true);
 
       const [ordersRes, usersRes] = await Promise.all([
         api.get("/orders"),
         api.get("/users"),
       ]);
 
-      setOrders(ordersRes.data);
-      setUsers(usersRes.data);
+      setOrders(
+        Array.isArray(ordersRes.data)
+          ? ordersRes.data
+          : []
+      );
 
-    } catch {
+      setUsers(
+        Array.isArray(usersRes.data)
+          ? usersRes.data
+          : []
+      );
+    } catch (error) {
+      console.error(error);
 
-      toast.error("Failed to load orders");
-
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to load orders"
+      );
     } finally {
-
       setLoading(false);
-
     }
-
   };
+
+  const usersMap = useMemo(() => {
+    return users.reduce((acc, user) => {
+      acc[user._id] = user.name;
+      return acc;
+    }, {});
+  }, [users]);
 
   const getUserName = (userId) => {
-
-    const user = users.find((u) => u._id === userId);
-
-    return user ? user.name : "Unknown";
-
+    return usersMap[userId] || "Unknown";
   };
 
-  const filteredOrders = orders.filter((order) =>
-    getUserName(order.userId)
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const formatPrice = (amount) => {
+    return new Intl.NumberFormat("en-IN").format(
+      amount || 0
+    );
+  };
 
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE);
-
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-
-  const paginatedOrders = filteredOrders.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
-
-  const updateStatus = async (orderId, newStatus) => {
+  const formatDate = (date) => {
+    if (!date) return "-";
 
     try {
+      return new Date(date).toLocaleString(
+        "en-IN"
+      );
+    } catch {
+      return date;
+    }
+  };
 
-      await api.patch(`/orders/${orderId}`, { status: newStatus });
+  const filteredOrders = orders.filter((order) => {
+    const searchValue =
+      search.toLowerCase();
+
+    return (
+      getUserName(order.userId)
+        .toLowerCase()
+        .includes(searchValue) ||
+      order._id
+        ?.toLowerCase()
+        .includes(searchValue) ||
+      (order.status || "")
+        .toLowerCase()
+        .includes(searchValue)
+    );
+  });
+
+  const totalPages = Math.ceil(
+    filteredOrders.length / ITEMS_PER_PAGE
+  );
+
+  const startIndex =
+    (currentPage - 1) * ITEMS_PER_PAGE;
+
+  const paginatedOrders =
+    filteredOrders.slice(
+      startIndex,
+      startIndex + ITEMS_PER_PAGE
+    );
+
+  const updateStatus = async (
+    orderId,
+    newStatus
+  ) => {
+    try {
+      await api.patch(
+        `/orders/${orderId}`,
+        {
+          status: newStatus,
+        }
+      );
 
       setOrders((prev) =>
         prev.map((order) =>
           order._id === orderId
-            ? { ...order, status: newStatus }
+            ? {
+                ...order,
+                status: newStatus,
+              }
             : order
         )
       );
 
-      toast.success("Order status updated");
+      toast.success(
+        "Order status updated"
+      );
+    } catch (error) {
+      console.error(error);
 
-    } catch {
-
-      toast.error("Failed to update status");
-
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to update status"
+      );
     }
-
   };
 
   if (loading) {
-
     return (
-      <div className="text-center py-20 text-gray-500">
+      <div className="flex justify-center items-center py-20 text-gray-500">
         Loading orders...
       </div>
     );
-
   }
 
   return (
-
     <div className="space-y-6">
 
       {/* HEADER */}
@@ -119,15 +177,13 @@ export default function AdminOrders() {
 
         <input
           type="text"
-          placeholder="🔍 Search by user name"
+          placeholder="Search by customer, order ID or status"
           value={search}
           onChange={(e) => {
-
             setSearch(e.target.value);
             setCurrentPage(1);
-
           }}
-          className="border rounded-lg px-4 py-2 w-full md:w-72 focus:ring-2 focus:ring-black outline-none"
+          className="border rounded-lg px-4 py-2 w-full md:w-80 focus:ring-2 focus:ring-black outline-none"
         />
 
       </div>
@@ -135,13 +191,10 @@ export default function AdminOrders() {
       {/* TABLE */}
 
       {paginatedOrders.length === 0 ? (
-
-        <p className="text-center text-gray-500 py-10">
+        <div className="bg-white rounded-xl shadow p-10 text-center text-gray-500">
           No orders found
-        </p>
-
+        </div>
       ) : (
-
         <div className="bg-white rounded-xl shadow overflow-x-auto">
 
           <table className="w-full text-sm">
@@ -149,124 +202,156 @@ export default function AdminOrders() {
             <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
 
               <tr>
+                <th className="p-4 text-left">
+                  Order ID
+                </th>
 
-                <th className="p-4 text-left">Order ID</th>
-                <th className="p-4 text-left">Customer</th>
-                <th className="p-4 text-left">Total</th>
-                <th className="p-4 text-left">Status</th>
-                <th className="p-4 text-left">Date</th>
+                <th className="p-4 text-left">
+                  Customer
+                </th>
 
+                <th className="p-4 text-left">
+                  Total
+                </th>
+
+                <th className="p-4 text-left">
+                  Status
+                </th>
+
+                <th className="p-4 text-left">
+                  Date
+                </th>
               </tr>
 
             </thead>
 
             <tbody>
 
-              {paginatedOrders.map((order) => (
+              {paginatedOrders.map(
+                (order) => (
+                  <tr
+                    key={order._id}
+                    className="border-t hover:bg-gray-50 transition"
+                  >
 
-                <tr
-                  key={order._id}
-                  className="border-t hover:bg-gray-50 transition"
-                >
+                    <td className="p-4 font-mono text-xs">
+                      {order._id}
+                    </td>
 
-                  <td className="p-4 font-mono text-xs">
-                    {order._id}
-                  </td>
+                    <td className="p-4 font-medium">
+                      {getUserName(
+                        order.userId
+                      )}
+                    </td>
 
-                  <td className="p-4 font-medium">
-                    {getUserName(order.userId)}
-                  </td>
+                    <td className="p-4 font-semibold text-gray-800">
+                      ₹
+                      {formatPrice(
+                        order.total
+                      )}
+                    </td>
 
-                  <td className="p-4 font-semibold text-gray-800">
-                    ₹{order.total}
-                  </td>
+                    <td className="p-4">
 
-                  <td className="p-4">
+                      <div className="flex flex-wrap items-center gap-2">
 
-                    <div className="flex items-center gap-2">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            STATUS_COLORS[
+                              order.status ||
+                                "Placed"
+                            ]
+                          }`}
+                        >
+                          {order.status ||
+                            "Placed"}
+                        </span>
 
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          STATUS_COLORS[order.status || "Placed"]
-                        }`}
-                      >
-                        {order.status || "Placed"}
-                      </span>
+                        <select
+                          value={
+                            order.status ||
+                            "Placed"
+                          }
+                          onChange={(e) =>
+                            updateStatus(
+                              order._id,
+                              e.target.value
+                            )
+                          }
+                          className="border rounded px-2 py-1 text-xs"
+                        >
+                          {STATUS_OPTIONS.map(
+                            (
+                              status
+                            ) => (
+                              <option
+                                key={
+                                  status
+                                }
+                                value={
+                                  status
+                                }
+                              >
+                                {
+                                  status
+                                }
+                              </option>
+                            )
+                          )}
+                        </select>
 
-                      <select
-                        value={order.status || "Placed"}
-                        onChange={(e) =>
-                          updateStatus(order._id, e.target.value)
-                        }
-                        className="border rounded px-2 py-1 text-xs"
-                      >
+                      </div>
 
-                        {STATUS_OPTIONS.map((status) => (
+                    </td>
 
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
+                    <td className="p-4 text-gray-500 text-xs">
+                      {formatDate(
+                        order.createdAt ||
+                          order.date
+                      )}
+                    </td>
 
-                        ))}
-
-                      </select>
-
-                    </div>
-
-                  </td>
-
-                  <td className="p-4 text-gray-500 text-xs">
-                    {order.date}
-                  </td>
-
-                </tr>
-
-              ))}
+                  </tr>
+                )
+              )}
 
             </tbody>
 
           </table>
 
         </div>
-
       )}
 
       {/* PAGINATION */}
 
       {totalPages > 1 && (
+        <div className="flex justify-center gap-2 pt-4 flex-wrap">
 
-        <div className="flex justify-center gap-2 pt-4">
-
-          {[...Array(totalPages)].map((_, i) => {
-
-            const page = i + 1;
-
-            return (
-
+          {Array.from(
+            { length: totalPages },
+            (_, index) => (
               <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
+                key={index + 1}
+                onClick={() =>
+                  setCurrentPage(
+                    index + 1
+                  )
+                }
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                  page === currentPage
+                  currentPage ===
+                  index + 1
                     ? "bg-black text-white"
                     : "bg-white border hover:bg-gray-100"
                 }`}
               >
-
-                {page}
-
+                {index + 1}
               </button>
-
-            );
-
-          })}
+            )
+          )}
 
         </div>
-
       )}
 
     </div>
-
   );
-
 }

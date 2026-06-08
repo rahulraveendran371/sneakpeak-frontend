@@ -1,60 +1,81 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import api from "../services/api";
 import { toast } from "react-toastify";
+import api from "../services/api";
 
 export default function Login() {
-
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
 
   const handleLogin = async (e) => {
+    e.preventDefault();
 
-    e.preventDefault();   // prevent page reload
+    const email = formData.email.trim();
+    const password = formData.password.trim();
 
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
-
-    if (!trimmedEmail || !trimmedPassword) {
+    if (!email || !password) {
       toast.error("All fields are required");
       return;
     }
 
-    try {
+    if (!validateEmail(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
 
-      const res = await api.post("/auth/login", {
-        email: trimmedEmail,
-        password: trimmedPassword
+    try {
+      setLoading(true);
+
+      const { data } = await api.post("/auth/login", {
+        email,
+        password,
       });
 
-      const data = res.data;
+      if (!data?.token || !data?.user) {
+        throw new Error("Invalid server response");
+      }
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // notify contexts
       window.dispatchEvent(new Event("user-changed"));
 
       toast.success("Login successful 🎉");
 
-      if (data.user.role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+      const role = data.user?.role;
 
+      navigate(
+        role === "admin" ? "/admin" : "/",
+        { replace: true }
+      );
     } catch (error) {
-
-      console.error(error);
+      console.error("Login Error:", error);
 
       toast.error(
-        error?.response?.data?.message || "Invalid email or password"
+        error?.response?.data?.message ||
+        error?.message ||
+        "Login failed"
       );
-
+    } finally {
+      setLoading(false);
     }
-
   };
 
   return (
@@ -65,44 +86,50 @@ export default function Login() {
           "url(https://images.unsplash.com/photo-1542291026-7eec264c27ff)",
       }}
     >
-      <div className="absolute inset-0 bg-black/60"></div>
+      <div className="absolute inset-0 bg-black/60" />
 
-      <div className="relative bg-white p-8 rounded-lg shadow-xl w-96 z-10">
+      <div className="relative bg-white p-8 rounded-xl shadow-xl w-full max-w-md z-10">
 
-        <h1 className="text-2xl font-bold mb-6 text-center">
+        <h1 className="text-2xl font-bold text-center mb-6">
           Login
         </h1>
 
-        {/* FORM */}
         <form onSubmit={handleLogin}>
 
           <input
             type="email"
+            name="email"
             placeholder="Email"
-            className="border p-2 w-full mb-3 rounded"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+            className="border p-3 w-full mb-3 rounded"
+            value={formData.email}
+            onChange={handleChange}
           />
 
           <input
             type="password"
+            name="password"
             placeholder="Password"
-            className="border p-2 w-full mb-4 rounded"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+            className="border p-3 w-full mb-4 rounded"
+            value={formData.password}
+            onChange={handleChange}
           />
 
           <button
             type="submit"
-            className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"
+            disabled={loading}
+            className="w-full bg-black text-white py-3 rounded hover:bg-gray-800 transition disabled:opacity-50"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
 
         </form>
 
         <p className="text-center text-sm mt-4">
-          Don’t have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             to="/register"
             className="text-blue-600 hover:underline"

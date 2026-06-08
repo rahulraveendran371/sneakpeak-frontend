@@ -25,7 +25,7 @@ export default function Products() {
     const fetchProducts = async () => {
       try {
         // API റൂട്ട് ശരിയാണെന്ന് ഉറപ്പാക്കുക
-        let url = `/products?page=${currentPage}&limit=${ITEMS_PER_PAGE}`;
+        let url = `/products?page=${currentPage}&limit=${ITEMS_PER_PAGE}&isActive=true`;
         if (search) url += `&search=${search}`;
 
         const res = await api.get(url);

@@ -1,117 +1,173 @@
-import { createContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
 
 export const CartContext = createContext();
 
 export function CartProvider({ children }) {
-
   const [userId, setUserId] = useState(null);
   const [cart, setCart] = useState([]);
 
   useEffect(() => {
-
     const handleUserChange = () => {
+      try {
+        const user = JSON.parse(
+          localStorage.getItem("user") || "null"
+        );
 
-      const user = JSON.parse(localStorage.getItem("user") || "null");
+        const id = user?._id || user?.id || null;
 
-      const id = user?._id || user?.id || null;
+        setUserId(id);
 
-      setUserId(id);
+        if (id) {
+          const stored = localStorage.getItem(`cart_${id}`);
 
-      if (id) {
-        const stored = localStorage.getItem(`cart_${id}`);
-        setCart(stored ? JSON.parse(stored) : []);
-      } else {
+          setCart(
+            stored ? JSON.parse(stored) : []
+          );
+        } else {
+          setCart([]);
+        }
+      } catch (error) {
+        console.error("Cart load error:", error);
         setCart([]);
       }
-
     };
 
     handleUserChange();
 
-    window.addEventListener("user-changed", handleUserChange);
+    window.addEventListener(
+      "user-changed",
+      handleUserChange
+    );
 
     return () =>
-      window.removeEventListener("user-changed", handleUserChange);
-
+      window.removeEventListener(
+        "user-changed",
+        handleUserChange
+      );
   }, []);
 
   useEffect(() => {
+    if (!userId) return;
 
-    if (userId) {
-      localStorage.setItem(`cart_${userId}`, JSON.stringify(cart));
-    }
-
+    localStorage.setItem(
+      `cart_${userId}`,
+      JSON.stringify(cart)
+    );
   }, [cart, userId]);
 
-  const addToCart = (product) => {
+  const getProductId = (product) =>
+    product?._id || product?.id;
+
+  const addToCart = useCallback((product) => {
+    const productId = getProductId(product);
+
+    if (!productId) return;
 
     setCart((prev) => {
+      const existing = prev.find(
+        (item) =>
+          getProductId(item) === productId
+      );
 
-      const exists = prev.find((i) => i._id === product._id);
-
-      if (exists) {
-        return prev.map((i) =>
-          i._id === product._id
-            ? { ...i, qty: i.qty + 1 }
-            : i
+      if (existing) {
+        return prev.map((item) =>
+          getProductId(item) === productId
+            ? {
+                ...item,
+                qty: item.qty + 1,
+              }
+            : item
         );
       }
 
-      return [...prev, { ...product, qty: 1 }];
-
+      return [
+        ...prev,
+        {
+          ...product,
+          qty: 1,
+        },
+      ];
     });
+  }, []);
 
-  };
-
-  const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((i) => i._id !== id));
-  };
-
-  const increaseQty = (id) => {
+  const removeFromCart = useCallback((id) => {
     setCart((prev) =>
-      prev.map((i) =>
-        i._id === id ? { ...i, qty: i.qty + 1 } : i
+      prev.filter(
+        (item) => getProductId(item) !== id
       )
     );
-  };
+  }, []);
 
-  const decreaseQty = (id) => {
+  const increaseQty = useCallback((id) => {
     setCart((prev) =>
-      prev
-        .map((i) =>
-          i._id === id ? { ...i, qty: i.qty - 1 } : i
-        )
-        .filter((i) => i.qty > 0)
+      prev.map((item) =>
+        getProductId(item) === id
+          ? {
+              ...item,
+              qty: item.qty + 1,
+            }
+          : item
+      )
     );
-  };
+  }, []);
 
-  const clearCart = () => {
+  const decreaseQty = useCallback((id) => {
+    setCart((prev) =>
+      prev.flatMap((item) => {
+        if (getProductId(item) !== id)
+          return [item];
 
+        if (item.qty <= 1)
+          return [];
+
+        return [
+          {
+            ...item,
+            qty: item.qty - 1,
+          },
+        ];
+      })
+    );
+  }, []);
+
+  const clearCart = useCallback(() => {
     setCart([]);
 
     if (userId) {
-      localStorage.removeItem(`cart_${userId}`);
+      localStorage.removeItem(
+        `cart_${userId}`
+      );
     }
+  }, [userId]);
 
-  };
-
-  return (
-
-    <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        removeFromCart,
-        increaseQty,
-        decreaseQty,
-        clearCart,
-      }}
-    >
-
-      {children}
-
-    </CartContext.Provider>
-
+  const value = useMemo(
+    () => ({
+      cart,
+      addToCart,
+      removeFromCart,
+      increaseQty,
+      decreaseQty,
+      clearCart,
+    }),
+    [
+      cart,
+      addToCart,
+      removeFromCart,
+      increaseQty,
+      decreaseQty,
+      clearCart,
+    ]
   );
 
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+    </CartContext.Provider>
+  );
 }

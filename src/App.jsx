@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 
 /* USER PAGES */
 import Home from "./pages/Home";
@@ -15,9 +16,9 @@ import Payment from "./pages/Payment";
 import Orders from "./pages/Orders";
 import Wishlist from "./pages/Wishlist";
 
+/* ROUTES */
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
-import { ToastContainer } from "react-toastify";
 
 /* ADMIN */
 import AdminRoute from "./admin/routes/AdminRoute";
@@ -30,14 +31,21 @@ import AddProduct from "./admin/pages/AddProduct";
 import UserDetails from "./admin/pages/UserDetails";
 import AdminOrders from "./admin/pages/AdminOrders";
 
+
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* USER ROUTES */}
+        {/* PUBLIC ROUTES */}
         <Route path="/" element={<Home />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/product/:id" element={<Product />} />
+        <Route path="/men" element={<Men />} />
+        <Route path="/women" element={<Women />} />
 
+        {/* GUEST ONLY ROUTES */}
         <Route
           path="/login"
           element={
@@ -56,23 +64,19 @@ export default function App() {
           }
         />
 
-        <Route path="/products" element={<Products />} />
-        <Route path="/product/:id" element={<Product />} />
-        <Route path="/men" element={<Men />} />
-        <Route path="/women" element={<Women />} />
-
-        <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-        <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
-        <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-        <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-        <Route path="/payment" element={<ProtectedRoute><Payment /></ProtectedRoute>} />
-        <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+        {/* PROTECTED USER ROUTES */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/orders" element={<Orders />} />
+        </Route>
 
         {/* ADMIN ROUTES */}
         <Route path="/admin" element={<AdminRoute />}>
-
           <Route element={<AdminLayout />}>
-
             <Route index element={<AdminDashboard />} />
             <Route path="products" element={<AdminProducts />} />
             <Route path="products/add" element={<AddProduct />} />
@@ -80,15 +84,20 @@ export default function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="users/:id" element={<UserDetails />} />
             <Route path="orders" element={<AdminOrders />} />
-
           </Route>
-
         </Route>
+
+       
 
       </Routes>
 
-      <ToastContainer position="top-right" autoClose={2000} />
-
+      <ToastContainer
+        position="top-right"
+        autoClose={2000}
+        pauseOnFocusLoss={false}
+        newestOnTop
+        limit={3}
+      />
     </BrowserRouter>
   );
 }
