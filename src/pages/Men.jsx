@@ -15,7 +15,7 @@ export default function Men() {
   const [sortOrder, setSortOrder] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const ITEMS_PER_PAGE = 16;
+  const ITEMS_PER_PAGE = 12;
 
   const { search } = useContext(SearchContext);
   const { cart, addToCart } = useContext(CartContext);
@@ -30,7 +30,9 @@ export default function Men() {
 
       try {
 
-        const res = await api.get("/products?category=men&isActive=true");
+        const res = await api.get(
+  "/products?category=men&isActive=true&limit=1000"
+);
 
         const data = Array.isArray(res.data)
           ? res.data
