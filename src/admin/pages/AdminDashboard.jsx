@@ -35,10 +35,10 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       const [usersRes, productsRes, ordersRes] = await Promise.all([
-        api.get("/users"),
-        api.get("/products"),
-        api.get("/orders"),
-      ]);
+  api.get("/users"),
+  api.get("/products?page=1&limit=1000"),
+  api.get("/orders"),
+]);
 
       const users = usersRes.data.users || usersRes.data;
 const products = productsRes.data.products || productsRes.data;
