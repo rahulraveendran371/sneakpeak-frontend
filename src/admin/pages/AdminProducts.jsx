@@ -19,7 +19,9 @@ export default function AdminProducts() {
     try {
       setLoading(true);
 
-      const res = await api.get("/products");
+      const res = await api.get(
+  "/products?page=1&limit=1000"
+);
 
       const data = Array.isArray(res.data)
         ? res.data
