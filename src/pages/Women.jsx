@@ -30,7 +30,9 @@ export default function Women() {
 
       try {
 
-        const res = await api.get("/products?category=women&isActive=true");
+            const res = await api.get(
+  "/products?category=women&isActive=true&limit=1000"
+);
 
         const data = Array.isArray(res.data)
           ? res.data
