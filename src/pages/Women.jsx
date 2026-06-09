@@ -15,7 +15,7 @@ export default function Women() {
   const [sortOrder, setSortOrder] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const ITEMS_PER_PAGE = 16;
+  const ITEMS_PER_PAGE = 12;
 
   const { search } = useContext(SearchContext);
   const { cart, addToCart } = useContext(CartContext);
