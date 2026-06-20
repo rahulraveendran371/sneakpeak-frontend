@@ -5,30 +5,34 @@ export default function ExploreProducts() {
 
   const products = [
     {
-      id: 1,
-      name: "All-Pro Nitro Sneakers",
-      price: 5999,
-      originalPrice: 7999,
-      tag: "New Drop",
-      image: "https://www.superkicks.in/cdn/shop/files/1-2025-11-25T114717.373.png?v=1768547785&width=1946",
+      "id": "69aaa1b95fdd4895cff88174",
+      "name": "NIKE AIR MAX",
+      "price": 3999,
+      "originalPrice": 2999,
+      "image": "https://www.superkicks.in/cdn/shop/files/1_ef28ab93-d40d-4714-8e87-2b7b7fa8c1ee.jpg?v=1780660429&width=823",
+      "category": "men",
+      "isActive": true
     },
     {
-      id: 2,
-      name: "Platinum Violet Sail",
-      price: 4999,
-      originalPrice: 6499,
-      tag: "Limited",
-      image: "https://www.superkicks.in/cdn/shop/files/4_93_579162fa-2779-494f-a475-4a5602bf1b14.jpg?v=1753185906&width=1946",
+      "id": "69ab0937abdc564df5e2cc6d",
+      "name": "Supra Trendy Women shoe",
+      "price": 1499,
+       "originalPrice": 2999,
+      "image": "https://www.superkicks.in/cdn/shop/files/IH9045_1.png?v=1779707574&width=823",
+      "category": "women",
+      "isActive": true
     },
     {
-      id: 3,
-      name: "Converse Classic Hi",
-      price: 899,
-      originalPrice: 1299,
-      tag: "Best Value",
-      image: "https://www.superkicks.in/cdn/shop/files/1_374d80fe-d6c7-4182-9b5c-de499c5a5ae4.png?v=1764759666&width=1946",
+     "id": "6a26d60ebb09eeb2a7e1e021",
+      "name": "AIR MAX MUSE",
+      "price": 9999,
+      "originalPrice": 12999,
+      "image": "https://www.superkicks.in/cdn/shop/files/FV1920-003_1.png?v=1779949542&width=823",
+      "category": "women",
+      "isActive": true
     },
   ];
+
 
   return (
     <>
@@ -40,8 +44,9 @@ export default function ExploreProducts() {
         .prod-card { transition: transform 0.4s cubic-bezier(0.16,1,0.3,1); }
         .prod-card:hover { transform: translateY(-8px); }
         .prod-img-wrap { overflow: hidden; }
-        .prod-img { transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); }
-        .prod-card:hover .prod-img { transform: scale(1.06); }
+        .prod-img { transition: transform 0.6s cubic-bezier(0.16,1,0.3,1); filter: drop-shadow(0 18px 22px rgba(0,0,0,0.55)); }
+        .prod-card:hover .prod-img { transform: scale(1.08) rotate(-1deg); }
+        .prod-glow { background: radial-gradient(circle at 50% 45%, rgba(255,255,255,0.07), transparent 65%); }
       `}</style>
 
       <section className="bg-neutral-950 py-20 px-6">
@@ -63,55 +68,75 @@ export default function ExploreProducts() {
 
           {/* Product Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="prod-card group bg-neutral-900 rounded-2xl overflow-hidden border border-white/5 hover:border-white/15 transition-colors duration-300"
-              >
-                {/* Image */}
-                <Link to={`/product/${product.id}`}>
-                  <div className="prod-img-wrap relative bg-neutral-800 h-64 flex items-center justify-center p-6">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="prod-img h-full max-h-48 w-auto object-contain"
-                    />
-                    {/* Tag */}
-                    <span className="exp-tag absolute top-4 left-4 text-rose-500 bg-black/70 border border-rose-600/40 px-2.5 py-1 rounded-full">
-                      {product.tag}
-                    </span>
-                  </div>
-                </Link>
+            {products.map((product) => {
+              const discount = Math.round((1 - product.price / product.originalPrice) * 100);
+              const hasDiscount = discount > 0;
 
-                {/* Info */}
-                <div className="p-6">
-                  <h3 className="exp-body font-semibold text-white text-base mb-1 line-clamp-1">
-                    {product.name}
-                  </h3>
+              return (
+                <div
+                  key={product.id}
+                  className="prod-card group bg-neutral-900 rounded-2xl overflow-hidden border border-white/5 hover:border-white/15 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.6)] transition-all duration-300"
+                >
+                  {/* Image */}
+                  <Link to={`/product/${product.id}`}>
+                    <div className="prod-img-wrap prod-glow relative bg-gradient-to-b from-neutral-800 to-neutral-900 h-72 flex items-center justify-center p-8">
+                      {/* Category tag */}
+                      <span className="exp-tag absolute top-4 left-4 text-gray-300 bg-black/60 backdrop-blur border border-white/10 px-2.5 py-1 rounded-full z-10">
+                        {product.category}
+                      </span>
 
-                  {/* Price */}
-                  <div className="flex items-center gap-3 mt-1 mb-5">
-                    <span className="exp-title text-white text-2xl">₹{product.price.toLocaleString()}</span>
-                    <span className="exp-body text-gray-600 text-sm line-through">₹{product.originalPrice.toLocaleString()}</span>
-                    <span className="exp-tag text-green-500 text-xs">
-                      {Math.round((1 - product.price / product.originalPrice) * 100)}% off
-                    </span>
-                  </div>
+                      {/* Discount badge */}
+                      {hasDiscount && (
+                        <span className="exp-tag absolute top-4 right-4 text-rose-400 bg-rose-950/60 backdrop-blur border border-rose-600/30 px-2.5 py-1 rounded-full z-10">
+                          {discount}% OFF
+                        </span>
+                      )}
 
-                  <Link
-                    to={`/product/${product.id}`}
-                    className="exp-body inline-flex items-center gap-2 text-xs font-semibold text-white bg-white/10 hover:bg-white hover:text-black px-4 py-2.5 rounded-full transition-all duration-200 tracking-widest uppercase"
-                  >
-                    View Product
-                    <span className="text-rose-500 group-hover:text-black">→</span>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="prod-img relative h-full max-h-52 w-auto object-contain"
+                      />
+
+                      {/* Ground shadow under shoe */}
+                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-32 h-4 bg-black/40 blur-xl rounded-full" />
+                    </div>
                   </Link>
+
+                  {/* Info */}
+                  <div className="p-6">
+                    <h3 className="exp-body font-semibold text-white text-base mb-1 line-clamp-1">
+                      {product.name}
+                    </h3>
+
+                    {/* Price */}
+                    <div className="flex items-center gap-3 mt-1 mb-5">
+                      <span className="exp-title text-white text-2xl">₹{product.price.toLocaleString()}</span>
+                      {hasDiscount && (
+                        <>
+                          <span className="exp-body text-gray-600 text-sm line-through">₹{product.originalPrice.toLocaleString()}</span>
+                          <span className="exp-tag text-green-500 text-xs">
+                            {discount}% off
+                          </span>
+                        </>
+                      )}
+                    </div>
+
+                    <Link
+                      to={`/product/${product.id}`}
+                      className="exp-body inline-flex items-center gap-2 text-xs font-semibold text-white bg-white/10 hover:bg-white hover:text-black px-4 py-2.5 rounded-full transition-all duration-200 tracking-widest uppercase"
+                    >
+                      View Product
+                      <span className="text-rose-500 group-hover:text-black">→</span>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Bottom CTA Banner */}
-          <div className="mt-12 relative rounded-2xl overflow-hidden bg-gradient-to-r from-rose-950 to-black border border-rose-900/30 p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="mt-12 relative rounded-2xl overflow-hidden bg-linear-to-r from-rose-950 to-black border border-rose-900/30 p-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h3 className="exp-title text-white text-3xl md:text-4xl mb-2">EXCLUSIVE DROPS EVERY WEEK</h3>
               <p className="exp-body text-gray-400 text-sm">New arrivals, limited editions, and rare finds — all in one place.</p>
