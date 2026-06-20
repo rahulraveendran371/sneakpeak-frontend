@@ -1,37 +1,47 @@
 import { Link, useNavigate } from "react-router-dom";
 
+import { useState, useEffect } from "react";
+import api from "../services/api";
+
 export default function ExploreProducts() {
   const navigate = useNavigate();
 
-  const products = [
-    {
-      "id": "69aaa1b95fdd4895cff88174",
-      "name": "NIKE AIR MAX",
-      "price": 3999,
-      "originalPrice": 2999,
-      "image": "https://www.superkicks.in/cdn/shop/files/1_ef28ab93-d40d-4714-8e87-2b7b7fa8c1ee.jpg?v=1780660429&width=823",
-      "category": "men",
-      "isActive": true
-    },
-    {
-      "id": "69ab0937abdc564df5e2cc6d",
-      "name": "Supra Trendy Women shoe",
-      "price": 1499,
-       "originalPrice": 2999,
-      "image": "https://www.superkicks.in/cdn/shop/files/IH9045_1.png?v=1779707574&width=823",
-      "category": "women",
-      "isActive": true
-    },
-    {
-     "id": "6a26d60ebb09eeb2a7e1e021",
-      "name": "AIR MAX MUSE",
-      "price": 9999,
-      "originalPrice": 12999,
-      "image": "https://www.superkicks.in/cdn/shop/files/FV1920-003_1.png?v=1779949542&width=823",
-      "category": "women",
-      "isActive": true
-    },
-  ];
+  const [products, setProducts] = useState([]);
+
+
+ useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const res = await api.get(
+        "/products?limit=3&isActive=true"
+      );
+
+      const data = res.data;
+
+      if (
+        data.products &&
+        Array.isArray(data.products)
+      ) {
+        setProducts(data.products);
+      } else if (
+        Array.isArray(data)
+      ) {
+        setProducts(
+          data.slice(0, 3)
+        );
+      } else {
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error(
+        "Error fetching products:",
+        error
+      );
+    }
+  };
+
+  fetchProducts();
+}, []);
 
 
   return (
@@ -74,11 +84,11 @@ export default function ExploreProducts() {
 
               return (
                 <div
-                  key={product.id}
+                  key={product._id}
                   className="prod-card group bg-neutral-900 rounded-2xl overflow-hidden border border-white/5 hover:border-white/15 shadow-[0_0_0_1px_rgba(255,255,255,0.02)] hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.6)] transition-all duration-300"
                 >
                   {/* Image */}
-                  <Link to={`/product/${product.id}`}>
+                  <Link to={`/product/${product._id}`}>
                     <div className="prod-img-wrap prod-glow relative bg-gradient-to-b from-neutral-800 to-neutral-900 h-72 flex items-center justify-center p-8">
                       {/* Category tag */}
                       <span className="exp-tag absolute top-4 left-4 text-gray-300 bg-black/60 backdrop-blur border border-white/10 px-2.5 py-1 rounded-full z-10">
@@ -123,7 +133,7 @@ export default function ExploreProducts() {
                     </div>
 
                     <Link
-                      to={`/product/${product.id}`}
+                      to={`/product/${product._id}`}
                       className="exp-body inline-flex items-center gap-2 text-xs font-semibold text-white bg-white/10 hover:bg-white hover:text-black px-4 py-2.5 rounded-full transition-all duration-200 tracking-widest uppercase"
                     >
                       View Product
